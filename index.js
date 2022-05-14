@@ -6,214 +6,83 @@ const Manager = require('./lib/Manager')
 const inquirer = require('inquirer')
 const fs = require('fs')
 
-//  Questions
-const questions = [
-    // Managagers Name
-    {
-        type: 'input',
-        name: 'managername',
-        message: 'What is the team managers name? (Required)',
-        validate: managernameInput => {
-            if (managernameInput) {
-                return true;
-            } else {
-                console.log('You need to provide your team managers name!');
-                return false;
-            }
-        }
+const employees = [];
+
+function initApp() {
+    startHtml();
+    addMember();
+}
+
+function addMember() {
+    inquirer.prompt([{
+        message: "What is the team managers name?",
+        name: "name"
     },
-    // Employee ID
     {
-        type: 'input',
-        name: 'employeeid',
-        message: 'What is your employee ID? (Required)',
-        validate: employeeidInput => {
-            if (employeeidInput) {
-                return true;
-            } else {
-                console.log('You need to provide your employee ID!');
-                return false;
-            }
-        }
+        message: "What is the team managers employee ID?",
+        name: "id"
     },
-    // Email Address
     {
-        type: 'input',
-        name: 'email',
-        message: 'What is your email? (Required)',
-        validate: emailInput => {
-            if (emailInput) {
-                return true;
-            } else {
-                console.log('You need to provide your email!');
-                return false;
-            }
-        }
+        message: "What is the team managers email?",
+        name: "email"
     },
-    // Office Number
     {
-        type: 'input',
-        name: 'office',
-        message: 'What is your office number? (Required)',
-        validate: officeInput => {
-            if (officeInput) {
-                return true;
-            } else {
-                console.log('You need to provide your office number!');
-                return false;
-            }
-        }
+        message: "What is the team managers office number?",
+        name: "office"
     },
-    // Add a Engineer or Intern or To finish building the team
     {
-        type: 'checkbox',
-        name: 'team',
-        message: 'Would you like add an Engineer or Intern? Select None to finish building your team (Select one)',
-        choices: ['Engineer', 'Intern', 'None'],
-        validate: teamInput => {
-            if (teamInput) {
-                return true;
+        type: "checkbox",
+        message: "Would you like add an Engineer or Intern? Select None to finish building your team",
+        choices: [
+            "Engineer",
+            "Intern",
+            "None"
+        ],
+        name: "role"
+    }])
+        .then(function ({ name, id, email, office, role }) {
+            let roleInfo = "";
+            if (role === "Engineer") {
+                roleInfo = "GitHub username";
+            } else if (role === "Intern") {
+                roleInfo = "school name";
             } else {
-                console.log('You must pick a an option!');
-                return false;
+                roleInfo = "office number"
             }
-        }
-        // }, 
-        // choices: Engineer => {
-        //     if (Engineer) {
-        //         return true;
-
-        // }
-    },
-
-    // Engineer Option
-
-    // Engineers Name
-    {
-        type: 'input',
-        name: 'engineername',
-        message: 'What is the engineers name? (Required)',
-        validate: engineernameInput => {
-            if (engineernameInput) {
-                return true;
-            } else {
-                console.log('You need to provide a name!');
-                return false;
-            }
-        }
-    },
-    // Employee ID
-    {
-        type: 'input',
-        name: 'engineerid',
-        message: 'What is the engineers employee ID? (Required)',
-        validate: engineeridInput => {
-            if (engineeridInput) {
-                return true;
-            } else {
-                console.log('You need to provide an employee ID!');
-                return false;
-            }
-        }
-    },
-    // Email Address
-    {
-        type: 'input',
-        name: 'engineeremail',
-        message: 'What is the engineers email? (Required)',
-        validate: engineeremailInput => {
-            if (engineeremailInput) {
-                return true;
-            } else {
-                console.log('You need to provide an email address!');
-                return false;
-            }
-        }
-    },
-    // GitHub Username
-    {
-        type: 'input',
-        name: 'github',
-        message: 'What is the engineers GitHub username? (Required)',
-        validate: githubInput => {
-            if (githubInput) {
-                return true;
-            } else {
-                console.log('You need to provide a GitHub username!');
-                return false;
-            }
-        }
-    },
-
-    // Intern Option
-
-    // Interns Name
-    {
-        type: 'input',
-        name: 'internname',
-        message: 'What is the interns name? (Required)',
-        validate: internnameInput => {
-            if (internnameInput) {
-                return true;
-            } else {
-                console.log('You need to provide a name!');
-                return false;
-            }
-        }
-    },
-    // Employee ID
-    {
-        type: 'input',
-        name: 'internid',
-        message: 'What is the engineers employee ID? (Required)',
-        validate: internidInput => {
-            if (internidInput) {
-                return true;
-            } else {
-                console.log('You need to provide an employee ID!');
-                return false;
-            }
-        }
-    },
-    // Email Address
-    {
-        type: 'input',
-        name: 'internemail',
-        message: 'What is the interns email? (Required)',
-        validate: internemailInput => {
-            if (internemailInput) {
-                return true;
-            } else {
-                console.log('You need to provide an email address!');
-                return false;
-            }
-        }
-    },
-    // School
-    {
-        type: 'input',
-        name: 'school',
-        message: 'What is school is the intern attending? (Required)',
-        validate: schoolInput => {
-            if (schoolInput) {
-                return true;
-            } else {
-                console.log('You need to provide a school!');
-                return false;
-            }
-        }
-    },
-
-
-
-
-
-
-
-
-
-];
-
-//intern questions functions inquirer questions
-
-//callback to create 
+            inquirer.prompt([{
+                message: `Enter team member's ${roleInfo}`,
+                name: "roleInfo"
+            },
+            {
+                type: "list",
+                message: "Would you like to add another member to this team?",
+                choices: [
+                    "yes",
+                    "no"
+                ],
+                name: "moreMembers"
+            }])
+                .then(function ({ roleInfo, moreMembers }) {
+                    let newMember;
+                    if (role === "Engineer") {
+                        newMember = new Engineer(name, id, email, roleInfo);
+                    }
+                    else if (role === "Intern") {
+                        newMember = new Intern(name, id, email, roleInfo);
+                    }
+                    else {
+                        newMember = new Manager(name, id, email, roleInfo)
+                    }
+                    employees.push(newMember);
+                    addHtml(newMember)
+                        .then(function () {
+                            if (moreMembers === "yes") {
+                                addMember();
+                            }
+                            else {
+                                finishHtml();
+                            }
+                        });
+                });
+        });
+}
