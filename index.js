@@ -3,6 +3,8 @@ const Engineer = require('./lib/Engineer')
 const Intern = require('./lib/Intern')
 const Manager = require('./lib/Manager')
 
+const generateMarkdown = require('./lib/GenerateHtml')
+
 const inquirer = require('inquirer')
 const fs = require('fs')
 const path = require("path");
@@ -85,7 +87,7 @@ internQuestions = [
 managerQuestions = [
     {
         type: "input",
-        name: "officeNumber",
+        name: "office",
         message: "What is the manager's office number? (Required)",
         validate: office => {
             if (office) {
@@ -126,26 +128,29 @@ const createQuestions = [
 
 
 
-const init = () => {
-    if (fs.existsSync(filePath)) {
-        inquirer.prompt({
-            type: "confirm",
-            message: "create your new HTML file",
-            name: "success"
-        }).then(async (response) => {
-            let success = response.success;
-            if (await success === true) {
-                console.log("Provide your team member's information below")
-                newEmployee()
-            } else if (await success === false) {
-                console.log("Your file has not been created")
-            }
-        })
-    } else {
-        console.log("Create your team")
-        newEmployee()
-    }
-}
+    const init = () => {
+        if (fs.existsSync(filePath)) {
+            inquirer.prompt({
+                type: "confirm",
+                message: "It looks like the index.html file in the 'dist' folder already exists. Do you want to overwrite it?",
+                name: "overwrite"
+            }).then(async (response) => {
+    
+                let overwrite = response.overwrite;
+                if (await overwrite === true) {
+                    console.log("Please enter your team information:")
+                    newEmployee()
+                } else if (await overwrite === false) {
+                    console.log("Your index.html file in the 'dist' folder will not be overwritten.")
+                }
+            })
+        } else {
+            console.log("Add your team information below to generate the html file:")
+            newEmployee()
+        }
+    };   
+
+    
 
 const newEmployee = async () => {
     await inquirer.prompt(questions)
@@ -193,7 +198,7 @@ const teamEmployee = async () => {
         let id = response.id;
         let email = response.email;
         let role = response.role;
-        let officeNumber;
+        let office;
         let github;
         let school;
 
@@ -207,7 +212,7 @@ const teamEmployee = async () => {
         }
         else if (role === "Manager") {
             inquirer.prompt(managerQuestions).then((response) =>{
-                    officeNumber = response.office;
+                    office = response.office;
                     let employee = new Manager(name, id, email, office);
                     employeesArr.push(employee);
                     addEmployee(employeesArr);
@@ -232,20 +237,24 @@ const addEmployee = async (array) => {
         name: "addEmployee",
         message: "Would you like to add another employee?"
     })
-        .then(async (response) => {
-            var createEmployee = response.addEmployee;
-            if (await createEmployee === true) {
-                teamEmployee();
+    .then(async (response) => {
+        var createEmployee = response.addEmployee;
+        if (await createEmployee === true) {
+            teamEmployee();
+        } 
+        else if (await createEmployee === false) {
+           
+            if (!fs.existsSync(fileDirectory)) {
+                fs.mkdirSync(fileDirectory)
             }
-            else if (await createEmployee === false) {
-                if (fs.existsSync(fileDirectory)) {
-                    fs.mkdirSync(fileDirectory)
-                }
 
-                fs.writeFile(filePath, renderHTML(array), (err) => {
-                    if (err) {
-                        return console.log(err);
-                    }
+            fs.writeFile(filePath, generateMarkdown(array), (err) => {
+        
+        
+                if (err) {
+                    return console.log(err);
+                }
+                
 
                     console.log("Success! Your index.html file has been created.");
                 });
@@ -254,6 +263,16 @@ const addEmployee = async (array) => {
 }
 
 
+// function writeToFile(fileName, data) {
+//     return fs.writeFileSync(path.join(process.cwd(),fileName), data);
+// }
+
+
+// const init = () => {
+//     inquirer.prompt(questions).then(response => {
+//         writeToFile('index.html', generateMarkdown({...response}))
+//     })
+// }
 
 
 
