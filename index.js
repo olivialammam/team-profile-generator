@@ -3,7 +3,7 @@ const Engineer = require('./lib/Engineer')
 const Intern = require('./lib/Intern')
 const Manager = require('./lib/Manager')
 
-const generateMarkdown = require('./lib/GenerateHtml')
+const renderHTML = require('./lib/GenerateHtml')
 
 const inquirer = require('inquirer')
 const fs = require('fs')
@@ -248,7 +248,7 @@ const addEmployee = async (array) => {
                 fs.mkdirSync(fileDirectory)
             }
 
-            fs.writeFile(filePath, generateMarkdown(array), (err) => {
+            fs.writeFile(filePath, renderHTML(array), (err) => {
         
         
                 if (err) {
